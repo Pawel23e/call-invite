@@ -1,11 +1,12 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import datetime
 import requests
 
 # 1. Seiten-Setup
 st.set_page_config(page_title="Frage ☎️", page_icon="📞", layout="centered")
 
-# 2. Modernes Dark-Design & flüchtender Button
+# 2. Modernes Dark-Design
 st.markdown("""
     <style>
     .stApp {
@@ -13,34 +14,29 @@ st.markdown("""
         color: #f1f1f1;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    
     .dark-card {
         background-color: #16181f;
-        padding: 35px 25px;
+        padding: 40px 30px;
         border-radius: 16px;
         border: 1px solid #282b36;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         text-align: center;
         max-width: 440px;
-        margin: 20px auto 10px auto;
+        margin: 40px auto;
     }
-    
     .main-title {
         color: #ffffff;
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 600;
         letter-spacing: -0.5px;
         margin-bottom: 8px;
     }
-
     .sub-title {
         color: #9aa0a6;
         font-size: 15px;
-        margin-bottom: 0px;
+        margin-bottom: 28px;
         line-height: 1.5;
     }
-
-    /* Streamlit-Standardbuttons */
     div.stButton > button {
         background-color: #1f232d;
         color: #ffffff;
@@ -51,28 +47,10 @@ st.markdown("""
         font-weight: 500;
         transition: all 0.2s ease;
     }
-    
     div.stButton > button:hover {
         background-color: #2b303e;
         border-color: #5c6375;
         color: #ffffff;
-    }
-
-    /* Der flüchtende Nein-Button */
-    #runaway-btn {
-        background-color: #1f232d;
-        color: #ffffff;
-        border: 1px solid #363b48;
-        border-radius: 10px;
-        padding: 12px 20px;
-        font-size: 15px;
-        font-weight: 500;
-        cursor: pointer;
-        width: 100%;
-        display: block;
-        box-sizing: border-box;
-        transition: transform 0.15s ease-out, left 0.15s ease-out, top 0.15s ease-out;
-        user-select: none;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -98,53 +76,114 @@ def send_telegram_notification(datum, zeit):
     except Exception as e:
         print(f"Fehler: {e}")
 
-# Status-Speicher
-if "step" not in st.session_state:
-    st.session_state.step = 1
+# Schritt-Steuerung via URL/Query-Params & Session
+current_step = st.query_params.get("step", "1")
+if "step" in st.session_state:
+    current_step = str(st.session_state.step)
 
-# --- SCHRITT 1: Die Hauptfrage ---
-if st.session_state.step == 1:
-    st.markdown("""
-        <div class="dark-card">
-            <div class="main-title">Kurze Frage an dich</div>
-            <div class="sub-title">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("Sehr gerne", use_container_width=True):
-            st.session_state.step = 2
-            st.rerun()
-            
-    with col2:
-        st.markdown("""
-            <div style="position: relative; width: 100%; height: 45px;">
-                <button id="runaway-btn" onmouseover="flee(this)" onclick="flee(this)">Eher nicht</button>
+# --- SCHRITT 1: Die Hauptfrage mit Ausweich-Button ---
+if current_step == "1":
+    interactive_card = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background-color: #16181f;
+            width: 100%;
+            max-width: 440px;
+            padding: 35px 25px;
+            border-radius: 16px;
+            border: 1px solid #282b36;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+            min-height: 250px;
+        }
+        .title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .sub {
+            color: #9aa0a6;
+            font-size: 15px;
+            margin-bottom: 35px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+        .btn {
+            background-color: #1f232d;
+            color: #ffffff;
+            border: 1px solid #363b48;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .btn:hover {
+            background-color: #2b303e;
+        }
+        #noBtn {
+            transition: all 0.15s ease-out;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="card" id="cardArea">
+            <div class="title">Kurze Frage an dich</div>
+            <div class="sub">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
+            <div class="btn-container">
+                <button class="btn" onclick="accept()">Sehr gerne</button>
+                <button class="btn" id="noBtn" onmouseover="flee()" onclick="flee()">Eher nicht</button>
             </div>
+        </div>
 
-            <script>
-            function flee(btn) {
-                const maxX = 180;
-                const minX = -180;
-                const maxY = 180;
-                const minY = -180;
-                
-                const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-                const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-                
-                btn.style.position = 'fixed';
-                btn.style.width = '140px';
-                btn.style.left = 'calc(50% + ' + randomX + 'px)';
-                btn.style.top = 'calc(50% + ' + randomY + 'px)';
-                btn.style.zIndex = '9999';
-            }
-            </script>
-        """, unsafe_allow_html=True)
+        <script>
+        function flee() {
+            const btn = document.getElementById('noBtn');
+            const card = document.getElementById('cardArea');
+            const rect = card.getBoundingClientRect();
+            
+            const maxX = rect.width - 130;
+            const maxY = rect.height - 60;
+            
+            const randomX = Math.floor(Math.random() * (maxX - 20)) + 20;
+            const randomY = Math.floor(Math.random() * (maxY - 80)) + 80;
+            
+            btn.style.position = 'absolute';
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+        }
+
+        function accept() {
+            window.parent.location.search = '?step=2';
+        }
+        </script>
+    </body>
+    </html>
+    """
+    components.html(interactive_card, height=320)
 
 # --- SCHRITT 2: Datum & Uhrzeit ---
-elif st.session_state.step == 2:
+elif current_step == "2":
     st.markdown("""
         <div class="dark-card">
             <div class="main-title">Wann passt es dir?</div>
@@ -160,15 +199,19 @@ elif st.session_state.step == 2:
         st.session_state.uhrzeit = uhrzeit
         send_telegram_notification(tag, uhrzeit)
         st.session_state.step = 3
+        st.query_params["step"] = "3"
         st.rerun()
 
 # --- SCHRITT 3: Bestätigung ---
-elif st.session_state.step == 3:
+elif current_step == "3":
+    tag_str = st.session_state.get("tag", datetime.date.today()).strftime('%d.%m.%Y')
+    zeit_str = st.session_state.get("uhrzeit", datetime.time(20, 0)).strftime('%H:%M')
+    
     st.markdown(f"""
         <div class="dark-card">
             <div class="main-title">Abgemacht.</div>
             <div class="sub-title" style="margin-top: 15px;">
-                Ich melde mich am <b style="color:#fff;">{st.session_state.tag.strftime('%d.%m.%Y')}</b> um <b style="color:#fff;">{st.session_state.uhrzeit.strftime('%H:%M')} Uhr</b> bei dir.
+                Ich melde mich am <b style="color:#fff;">{tag_str}</b> um <b style="color:#fff;">{zeit_str} Uhr</b> bei dir.
             </div>
         </div>
     """, unsafe_allow_html=True)
