@@ -1,12 +1,11 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import datetime
 import requests
 
 # 1. Seiten-Setup
 st.set_page_config(page_title="Frage ☎️", page_icon="📞", layout="centered")
 
-# 2. Modernes Dark-Design
+# 2. Modernes Dark-Design & flüchtender Button
 st.markdown("""
     <style>
     .stApp {
@@ -14,29 +13,34 @@ st.markdown("""
         color: #f1f1f1;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+    
     .dark-card {
         background-color: #16181f;
-        padding: 40px 30px;
+        padding: 35px 25px;
         border-radius: 16px;
         border: 1px solid #282b36;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         text-align: center;
         max-width: 440px;
-        margin: 40px auto;
+        margin: 20px auto 10px auto;
     }
+    
     .main-title {
         color: #ffffff;
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 600;
         letter-spacing: -0.5px;
         margin-bottom: 8px;
     }
+
     .sub-title {
         color: #9aa0a6;
         font-size: 15px;
-        margin-bottom: 28px;
+        margin-bottom: 0px;
         line-height: 1.5;
     }
+
+    /* Streamlit-Standardbuttons */
     div.stButton > button {
         background-color: #1f232d;
         color: #ffffff;
@@ -47,15 +51,33 @@ st.markdown("""
         font-weight: 500;
         transition: all 0.2s ease;
     }
+    
     div.stButton > button:hover {
         background-color: #2b303e;
         border-color: #5c6375;
         color: #ffffff;
     }
+
+    /* Der flüchtende Nein-Button */
+    #runaway-btn {
+        background-color: #1f232d;
+        color: #ffffff;
+        border: 1px solid #363b48;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        display: block;
+        box-sizing: border-box;
+        transition: transform 0.15s ease-out, left 0.15s ease-out, top 0.15s ease-out;
+        user-select: none;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Deine Telegram-Daten
+# 3. Telegram-Daten
 TELEGRAM_BOT_TOKEN = "8919322605:AAGrTOwGvLU2clKXabJ_NnFAdxDGtwxjApg"
 TELEGRAM_CHAT_ID = "8480464169"
 
@@ -80,91 +102,46 @@ def send_telegram_notification(datum, zeit):
 if "step" not in st.session_state:
     st.session_state.step = 1
 
-# --- SCHRITT 1: Die Hauptfrage mit Ausweich-Button ---
+# --- SCHRITT 1: Die Hauptfrage ---
 if st.session_state.step == 1:
-    card_html = """
-    <div style="
-        background-color: #16181f;
-        padding: 40px 30px;
-        border-radius: 16px;
-        border: 1px solid #282b36;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        text-align: center;
-        max-width: 440px;
-        margin: 20px auto;
-        position: relative;
-        height: 320px;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        box-sizing: border-box;
-        overflow: hidden;
-    ">
-        <div style="color: #ffffff; font-size: 24px; font-weight: 600; margin-bottom: 8px;">
-            Kurze Frage an dich
+    st.markdown("""
+        <div class="dark-card">
+            <div class="main-title">Kurze Frage an dich</div>
+            <div class="sub-title">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
         </div>
-        <div style="color: #9aa0a6; font-size: 15px; margin-bottom: 30px;">
-            Hättest du Lust, die Tage mal mit mir zu telefonieren?
-        </div>
-
-        <button id="yesBtn" onclick="sendYes()" style="
-            background-color: #1f232d;
-            color: #ffffff;
-            border: 1px solid #363b48;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            position: absolute;
-            bottom: 60px;
-            left: 55px;
-            transition: 0.2s;
-        ">Sehr gerne</button>
-
-        <button id="noBtn" onmouseover="dodgeButton()" onclick="dodgeButton()" style="
-            background-color: #1f232d;
-            color: #ffffff;
-            border: 1px solid #363b48;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            position: absolute;
-            bottom: 60px;
-            right: 55px;
-            transition: all 0.15s ease-out;
-        ">Eher nicht</button>
-    </div>
-
-    <script>
-    function dodgeButton() {
-        const btn = document.getElementById('noBtn');
-        const minX = 20;
-        const maxX = 300;
-        const minY = 120;
-        const maxY = 250;
-
-        const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-        const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-
-        btn.style.left = randomX + 'px';
-        btn.style.top = randomY + 'px';
-        btn.style.bottom = 'auto';
-        btn.style.right = 'auto';
-    }
-
-    function sendYes() {
-        window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: true}, '*');
-    }
-    </script>
-    """
+    """, unsafe_allow_html=True)
     
-    # Rendern der Komponente
-    clicked_yes = components.html(card_html, height=380)
+    col1, col2 = st.columns(2)
     
-    if clicked_yes:
-        st.session_state.step = 2
-        st.rerun()
+    with col1:
+        if st.button("Sehr gerne", use_container_width=True):
+            st.session_state.step = 2
+            st.rerun()
+            
+    with col2:
+        st.markdown("""
+            <div style="position: relative; width: 100%; height: 45px;">
+                <button id="runaway-btn" onmouseover="flee(this)" onclick="flee(this)">Eher nicht</button>
+            </div>
+
+            <script>
+            function flee(btn) {
+                const maxX = 180;
+                const minX = -180;
+                const maxY = 180;
+                const minY = -180;
+                
+                const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+                const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+                
+                btn.style.position = 'fixed';
+                btn.style.width = '140px';
+                btn.style.left = 'calc(50% + ' + randomX + 'px)';
+                btn.style.top = 'calc(50% + ' + randomY + 'px)';
+                btn.style.zIndex = '9999';
+            }
+            </script>
+        """, unsafe_allow_html=True)
 
 # --- SCHRITT 2: Datum & Uhrzeit ---
 elif st.session_state.step == 2:
