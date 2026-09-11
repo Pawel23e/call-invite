@@ -55,7 +55,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Telegram-Daten
+# 3. Deine Telegram-Daten
 TELEGRAM_BOT_TOKEN = "8919322605:AAGrTOwGvLU2clKXabJ_NnFAdxDGtwxjApg"
 TELEGRAM_CHAT_ID = "8480464169"
 
@@ -91,19 +91,18 @@ if st.session_state.step == 1:
     
     col1, col2 = st.columns(2)
     with col1:
-        # Nativer Streamlit-Button -> Schaltet zuverlässig weiter!
         if st.button("Sehr gerne", use_container_width=True):
             st.session_state.step = 2
             st.rerun()
 
     with col2:
-        # Der flüchtende Button im iframe
+        # Fliegender Button mit großem Flugradius und Spin
         components.html("""
             <!DOCTYPE html>
             <html>
             <head>
             <style>
-                body { margin: 0; padding: 0; background: transparent; overflow: hidden; height: 100%; }
+                body { margin: 0; padding: 0; background: transparent; overflow: visible; }
                 #noBtn {
                     background-color: #1f232d;
                     color: #ffffff;
@@ -116,8 +115,10 @@ if st.session_state.step == 1:
                     width: 100%;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                     box-sizing: border-box;
-                    transition: all 0.15s ease-out;
+                    position: relative;
+                    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
                     user-select: none;
+                    white-space: nowrap;
                 }
                 #noBtn:hover {
                     background-color: #2b303e;
@@ -125,23 +126,33 @@ if st.session_state.step == 1:
             </style>
             </head>
             <body>
-                <button id="noBtn" onmouseover="flee()" onclick="flee()">Eher nicht</button>
+                <button id="noBtn" onmouseenter="flyAway()" onclick="flyAway()">Eher nicht</button>
                 <script>
-                function flee() {
+                let flies = 0;
+                function flyAway() {
                     const btn = document.getElementById('noBtn');
-                    const maxX = window.innerWidth - 120;
-                    const maxY = window.innerHeight - 45;
-                    const randomX = Math.max(10, Math.floor(Math.random() * maxX));
-                    const randomY = Math.max(10, Math.floor(Math.random() * maxY));
-                    btn.style.position = 'fixed';
-                    btn.style.width = '120px';
-                    btn.style.left = randomX + 'px';
-                    btn.style.top = randomY + 'px';
+                    flies++;
+                    
+                    // Weite Sprünge (300px bis 550px in alle Richtungen)
+                    const directions = [-1, 1];
+                    const dirX = directions[Math.floor(Math.random() * directions.length)];
+                    const dirY = directions[Math.floor(Math.random() * directions.length)];
+                    
+                    const moveX = dirX * (Math.floor(Math.random() * 250) + 250);
+                    const moveY = dirY * (Math.floor(Math.random() * 200) + 150);
+                    const rotate = (Math.random() * 60 - 30); // leichte Schräglage im Flug
+                    
+                    btn.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${rotate}deg)`;
+                    
+                    // Lustige Sprüche nach mehrmaligem Versuchen
+                    if (flies === 2) btn.innerText = "Fast! 😜";
+                    if (flies === 4) btn.innerText = "Keine Chance 😂";
+                    if (flies === 6) btn.innerText = "Gib auf 🚀";
                 }
                 </script>
             </body>
             </html>
-        """, height=50)
+        """, height=60)
 
 # --- SCHRITT 2: Datum & Uhrzeit ---
 elif st.session_state.step == 2:
