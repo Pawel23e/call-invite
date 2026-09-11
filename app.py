@@ -158,7 +158,7 @@ if step == "1":
     <body>
         <div class="card" id="arena">
             <div class="title">Kurze Frage an dich</div>
-            <div class="sub">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
+            <div class="sub">Hast du Lust mit mir zu telefonieren?</div>
 
             <!-- Funktioniert garantiert und schaltet weiter -->
             <a href="/?step=2" target="_top" class="btn" id="yesBtn">Sehr gerne</a>
@@ -188,9 +188,9 @@ if step == "1":
             btn.style.bottom = 'auto';
             btn.style.right = 'auto';
 
-            if (counter === 2) btn.innerText = "Zu langsam! 😜";
-            if (counter === 4) btn.innerText = "Fast gehabt 😂";
-            if (counter === 6) btn.innerText = "Gib auf 🏃‍♂️";
+            if (counter === 2) btn.innerText = "musst schneller sein";
+            if (counter === 4) btn.innerText = "nein akzeptier ich nicht";
+            if (counter === 6) btn.innerText = "so wird es nichts";
         }
         </script>
     </body>
@@ -201,8 +201,8 @@ if step == "1":
 elif step == "2":
     st.markdown("""
         <div class="dark-card">
-            <div class="main-title">Wann passt es dir?</div>
-            <div class="sub-title">Wähle einfach einen Tag und eine Uhrzeit aus:</div>
+            <div class="main-title">Wann passts für dich?</div>
+            <div class="sub-title">Wähl einen Tag und eine Uhrzeit aus:</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -226,7 +226,7 @@ elif step == "3":
         <div class="dark-card">
             <div class="main-title">Abgemacht.</div>
             <div class="sub-title" style="margin-top: 15px;">
-                Ich melde mich am <b style="color:#fff;">{tag_val}</b> um <b style="color:#fff;">{zeit_val} Uhr</b> bei dir.
+                Ich meld mich am <b style="color:#fff;">{tag_val}</b> um <b style="color:#fff;">{zeit_val} Uhr</b> bei dir Süsse.
             </div>
         </div>
     """, unsafe_allow_html=True)
