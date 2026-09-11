@@ -216,22 +216,9 @@ elif step == "2":
     tag = st.date_input("Datum", min_value=datetime.date.today())
     uhrzeit = st.time_input("Uhrzeit", datetime.time(20, 0))
     
-    st.markdown("<p style='font-size: 13px; color: #9aa0a6; margin-bottom: 5px;'>Schnell-Antworten:</p>", unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        if st.button("Kaffee steht bereit ☕"):
-            st.session_state.nachricht = "Kaffee steht bereit ☕"
-            st.rerun()
-    with c2:
-        if st.button("Sei pünktlich! ⏰"):
-            st.session_state.nachricht = "Sei pünktlich! ⏰"
-            st.rerun()
-    with c3:
-        if st.button("Freu mich schon ✨"):
-            st.session_state.nachricht = "Freu mich schon ✨"
-            st.rerun()
+   
 
-    notiz = st.text_area("Möchtest du mir noch was sagen? (optional)", value=st.session_state.nachricht, placeholder="Schreib hier was rein...")
+    notiz = st.text_area("Willst du mir noch was sagen? (optional)", value=st.session_state.nachricht, placeholder="Schreib hier was rein...")
     
     if st.button("Termin bestätigen", use_container_width=True):
         st.session_state.tag = tag
