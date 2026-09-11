@@ -168,7 +168,7 @@ if step == "1":
     </head>
     <body>
         <div class="card" id="arena">
-            <div class="title">Kurze Frage an dich</div>
+            <div class="title">Was geht ab Lilas, kurze Frage an dich</div>
             <div class="sub">Hast du Lust mit mir zu telefonieren?</div>
 
             <a href="/?step=2" target="_top" class="btn" id="yesBtn">Sehr gerne</a>
