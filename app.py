@@ -55,7 +55,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Deine Telegram-Daten
+# 3. Telegram-Daten
 TELEGRAM_BOT_TOKEN = "8919322605:AAGrTOwGvLU2clKXabJ_NnFAdxDGtwxjApg"
 TELEGRAM_CHAT_ID = "8480464169"
 
@@ -96,13 +96,13 @@ if st.session_state.step == 1:
             st.rerun()
 
     with col2:
-        # Fliegender Button mit großem Flugradius und Spin
+        # Der fangbare Ausweich-Button
         components.html("""
             <!DOCTYPE html>
             <html>
             <head>
             <style>
-                body { margin: 0; padding: 0; background: transparent; overflow: visible; }
+                body { margin: 0; padding: 0; background: transparent; }
                 #noBtn {
                     background-color: #1f232d;
                     color: #ffffff;
@@ -115,8 +115,7 @@ if st.session_state.step == 1:
                     width: 100%;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                     box-sizing: border-box;
-                    position: relative;
-                    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    transition: left 0.18s ease-out, top 0.18s ease-out;
                     user-select: none;
                     white-space: nowrap;
                 }
@@ -126,28 +125,41 @@ if st.session_state.step == 1:
             </style>
             </head>
             <body>
-                <button id="noBtn" onmouseenter="flyAway()" onclick="flyAway()">Eher nicht</button>
+                <button id="noBtn" onmouseenter="dodge()" onclick="dodge()">Eher nicht</button>
                 <script>
-                let flies = 0;
-                function flyAway() {
+                let escapes = 0;
+                function dodge() {
                     const btn = document.getElementById('noBtn');
-                    flies++;
+                    escapes++;
                     
-                    // Weite Sprünge (300px bis 550px in alle Richtungen)
-                    const directions = [-1, 1];
-                    const dirX = directions[Math.floor(Math.random() * directions.length)];
-                    const dirY = directions[Math.floor(Math.random() * directions.length)];
+                    // Button wird fest auf dem Bildschirm verankert
+                    btn.style.position = 'fixed';
+                    btn.style.width = '140px';
+                    btn.style.zIndex = '99999';
+
+                    // Sichtbare Fenstermaße ermitteln mit 40px Rand als Puffer
+                    const btnWidth = 140;
+                    const btnHeight = 45;
+                    const padding = 40;
                     
-                    const moveX = dirX * (Math.floor(Math.random() * 250) + 250);
-                    const moveY = dirY * (Math.floor(Math.random() * 200) + 150);
-                    const rotate = (Math.random() * 60 - 30); // leichte Schräglage im Flug
+                    const screenWidth = window.top.innerWidth || window.innerWidth;
+                    const screenHeight = window.top.innerHeight || window.innerHeight;
                     
-                    btn.style.transform = `translate(${moveX}px, ${moveY}px) rotate(${rotate}deg)`;
-                    
-                    // Lustige Sprüche nach mehrmaligem Versuchen
-                    if (flies === 2) btn.innerText = "Fast! 😜";
-                    if (flies === 4) btn.innerText = "Keine Chance 😂";
-                    if (flies === 6) btn.innerText = "Gib auf 🚀";
+                    const maxX = Math.max(padding, screenWidth - btnWidth - padding);
+                    const maxY = Math.max(padding, screenHeight - btnHeight - padding);
+
+                    // Zufällige Koordinate, die garantiert im Sichtbereich bleibt
+                    const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
+                    const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
+
+                    btn.style.left = randomX + 'px';
+                    btn.style.top = randomY + 'px';
+
+                    // Wechselnde Texte beim Jagen
+                    if (escapes === 1) btn.innerText = "Zu langsam! 😜";
+                    if (escapes === 3) btn.innerText = "Fast gehabt 😂";
+                    if (escapes === 5) btn.innerText = "Gib auf 🏃‍♂️";
+                    if (escapes === 7) btn.innerText = "Niemals 👻";
                 }
                 </script>
             </body>
