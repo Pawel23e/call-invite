@@ -22,7 +22,7 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         text-align: center;
         max-width: 440px;
-        margin: 40px auto;
+        margin: 40px auto 20px auto;
     }
     .main-title {
         color: #ffffff;
@@ -34,7 +34,7 @@ st.markdown("""
     .sub-title {
         color: #9aa0a6;
         font-size: 15px;
-        margin-bottom: 28px;
+        margin-bottom: 10px;
         line-height: 1.5;
     }
     div.stButton > button {
@@ -76,114 +76,75 @@ def send_telegram_notification(datum, zeit):
     except Exception as e:
         print(f"Fehler: {e}")
 
-# Schritt-Steuerung via URL/Query-Params & Session
-current_step = st.query_params.get("step", "1")
-if "step" in st.session_state:
-    current_step = str(st.session_state.step)
+# Status-Speicher
+if "step" not in st.session_state:
+    st.session_state.step = 1
 
-# --- SCHRITT 1: Die Hauptfrage mit Ausweich-Button ---
-if current_step == "1":
-    interactive_card = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-        }
-        .card {
-            background-color: #16181f;
-            width: 100%;
-            max-width: 440px;
-            padding: 35px 25px;
-            border-radius: 16px;
-            border: 1px solid #282b36;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            box-sizing: border-box;
-            position: relative;
-            min-height: 250px;
-        }
-        .title {
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .sub {
-            color: #9aa0a6;
-            font-size: 15px;
-            margin-bottom: 35px;
-        }
-        .btn-container {
-            display: flex;
-            justify-content: space-around;
-            gap: 15px;
-        }
-        .btn {
-            background-color: #1f232d;
-            color: #ffffff;
-            border: 1px solid #363b48;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-            user-select: none;
-        }
-        .btn:hover {
-            background-color: #2b303e;
-        }
-        #noBtn {
-            transition: all 0.15s ease-out;
-        }
-    </style>
-    </head>
-    <body>
-        <div class="card" id="cardArea">
-            <div class="title">Kurze Frage an dich</div>
-            <div class="sub">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
-            <div class="btn-container">
-                <button class="btn" onclick="accept()">Sehr gerne</button>
-                <button class="btn" id="noBtn" onmouseover="flee()" onclick="flee()">Eher nicht</button>
-            </div>
+# --- SCHRITT 1: Die Hauptfrage ---
+if st.session_state.step == 1:
+    st.markdown("""
+        <div class="dark-card">
+            <div class="main-title">Kurze Frage an dich</div>
+            <div class="sub-title">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
         </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        # Nativer Streamlit-Button -> Schaltet zuverlässig weiter!
+        if st.button("Sehr gerne", use_container_width=True):
+            st.session_state.step = 2
+            st.rerun()
 
-        <script>
-        function flee() {
-            const btn = document.getElementById('noBtn');
-            const card = document.getElementById('cardArea');
-            const rect = card.getBoundingClientRect();
-            
-            const maxX = rect.width - 130;
-            const maxY = rect.height - 60;
-            
-            const randomX = Math.floor(Math.random() * (maxX - 20)) + 20;
-            const randomY = Math.floor(Math.random() * (maxY - 80)) + 80;
-            
-            btn.style.position = 'absolute';
-            btn.style.left = randomX + 'px';
-            btn.style.top = randomY + 'px';
-        }
-
-        function accept() {
-            window.parent.location.search = '?step=2';
-        }
-        </script>
-    </body>
-    </html>
-    """
-    components.html(interactive_card, height=320)
+    with col2:
+        # Der flüchtende Button im iframe
+        components.html("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <style>
+                body { margin: 0; padding: 0; background: transparent; overflow: hidden; height: 100%; }
+                #noBtn {
+                    background-color: #1f232d;
+                    color: #ffffff;
+                    border: 1px solid #363b48;
+                    border-radius: 10px;
+                    padding: 12px 20px;
+                    font-size: 15px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    width: 100%;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    box-sizing: border-box;
+                    transition: all 0.15s ease-out;
+                    user-select: none;
+                }
+                #noBtn:hover {
+                    background-color: #2b303e;
+                }
+            </style>
+            </head>
+            <body>
+                <button id="noBtn" onmouseover="flee()" onclick="flee()">Eher nicht</button>
+                <script>
+                function flee() {
+                    const btn = document.getElementById('noBtn');
+                    const maxX = window.innerWidth - 120;
+                    const maxY = window.innerHeight - 45;
+                    const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+                    const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+                    btn.style.position = 'fixed';
+                    btn.style.width = '120px';
+                    btn.style.left = randomX + 'px';
+                    btn.style.top = randomY + 'px';
+                }
+                </script>
+            </body>
+            </html>
+        """, height=50)
 
 # --- SCHRITT 2: Datum & Uhrzeit ---
-elif current_step == "2":
+elif st.session_state.step == 2:
     st.markdown("""
         <div class="dark-card">
             <div class="main-title">Wann passt es dir?</div>
@@ -199,19 +160,15 @@ elif current_step == "2":
         st.session_state.uhrzeit = uhrzeit
         send_telegram_notification(tag, uhrzeit)
         st.session_state.step = 3
-        st.query_params["step"] = "3"
         st.rerun()
 
 # --- SCHRITT 3: Bestätigung ---
-elif current_step == "3":
-    tag_str = st.session_state.get("tag", datetime.date.today()).strftime('%d.%m.%Y')
-    zeit_str = st.session_state.get("uhrzeit", datetime.time(20, 0)).strftime('%H:%M')
-    
+elif st.session_state.step == 3:
     st.markdown(f"""
         <div class="dark-card">
             <div class="main-title">Abgemacht.</div>
             <div class="sub-title" style="margin-top: 15px;">
-                Ich melde mich am <b style="color:#fff;">{tag_str}</b> um <b style="color:#fff;">{zeit_str} Uhr</b> bei dir.
+                Ich melde mich am <b style="color:#fff;">{st.session_state.tag.strftime('%d.%m.%Y')}</b> um <b style="color:#fff;">{st.session_state.uhrzeit.strftime('%H:%M')} Uhr</b> bei dir.
             </div>
         </div>
     """, unsafe_allow_html=True)
