@@ -34,7 +34,7 @@ st.markdown("""
     .sub-title {
         color: #9aa0a6;
         font-size: 15px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         line-height: 1.5;
     }
     div.stButton > button {
@@ -55,7 +55,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Telegram-Daten
+# 3. Deine Telegram-Daten
 TELEGRAM_BOT_TOKEN = "8919322605:AAGrTOwGvLU2clKXabJ_NnFAdxDGtwxjApg"
 TELEGRAM_CHAT_ID = "8480464169"
 
@@ -76,98 +76,129 @@ def send_telegram_notification(datum, zeit):
     except Exception as e:
         print(f"Fehler: {e}")
 
-# Status-Speicher
-if "step" not in st.session_state:
-    st.session_state.step = 1
+# Schritt-Steuerung
+step = st.query_params.get("step", "1")
+if "step" in st.session_state:
+    step = str(st.session_state.step)
 
-# --- SCHRITT 1: Die Hauptfrage ---
-if st.session_state.step == 1:
-    st.markdown("""
-        <div class="dark-card">
-            <div class="main-title">Kurze Frage an dich</div>
-            <div class="sub-title">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
+# --- SCHRITT 1: Die Jagd-Karte ---
+if step == "1":
+    components.html("""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .card {
+            background-color: #16181f;
+            width: 100%;
+            max-width: 440px;
+            height: 380px;
+            padding: 35px 25px;
+            border-radius: 16px;
+            border: 1px solid #282b36;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .title {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .sub {
+            color: #9aa0a6;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .btn {
+            background-color: #1f232d;
+            color: #ffffff;
+            border: 1px solid #363b48;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-sizing: border-box;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: #2b303e;
+        }
+        #yesBtn {
+            position: absolute;
+            bottom: 40px;
+            left: 35px;
+            width: 150px;
+        }
+        #noBtn {
+            position: absolute;
+            bottom: 40px;
+            right: 35px;
+            width: 150px;
+            transition: left 0.15s ease-out, top 0.15s ease-out;
+            white-space: nowrap;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="card" id="arena">
+            <div class="title">Kurze Frage an dich</div>
+            <div class="sub">Hättest du Lust, die Tage mal mit mir zu telefonieren?</div>
+
+            <!-- Funktioniert garantiert und schaltet weiter -->
+            <a href="/?step=2" target="_top" class="btn" id="yesBtn">Sehr gerne</a>
+
+            <!-- Der Ausweich-Button -->
+            <button class="btn" id="noBtn" onmouseover="dodge()" onclick="dodge()">Eher nicht</button>
         </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Sehr gerne", use_container_width=True):
-            st.session_state.step = 2
-            st.rerun()
 
-    with col2:
-        # Der fangbare Ausweich-Button
-        components.html("""
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <style>
-                body { margin: 0; padding: 0; background: transparent; }
-                #noBtn {
-                    background-color: #1f232d;
-                    color: #ffffff;
-                    border: 1px solid #363b48;
-                    border-radius: 10px;
-                    padding: 12px 20px;
-                    font-size: 15px;
-                    font-weight: 500;
-                    cursor: pointer;
-                    width: 100%;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    box-sizing: border-box;
-                    transition: left 0.18s ease-out, top 0.18s ease-out;
-                    user-select: none;
-                    white-space: nowrap;
-                }
-                #noBtn:hover {
-                    background-color: #2b303e;
-                }
-            </style>
-            </head>
-            <body>
-                <button id="noBtn" onmouseenter="dodge()" onclick="dodge()">Eher nicht</button>
-                <script>
-                let escapes = 0;
-                function dodge() {
-                    const btn = document.getElementById('noBtn');
-                    escapes++;
-                    
-                    // Button wird fest auf dem Bildschirm verankert
-                    btn.style.position = 'fixed';
-                    btn.style.width = '140px';
-                    btn.style.zIndex = '99999';
+        <script>
+        let counter = 0;
+        function dodge() {
+            const btn = document.getElementById('noBtn');
+            const arena = document.getElementById('arena');
+            counter++;
 
-                    // Sichtbare Fenstermaße ermitteln mit 40px Rand als Puffer
-                    const btnWidth = 140;
-                    const btnHeight = 45;
-                    const padding = 40;
-                    
-                    const screenWidth = window.top.innerWidth || window.innerWidth;
-                    const screenHeight = window.top.innerHeight || window.innerHeight;
-                    
-                    const maxX = Math.max(padding, screenWidth - btnWidth - padding);
-                    const maxY = Math.max(padding, screenHeight - btnHeight - padding);
+            // Begrenzung exakt auf das Innere der Karte (damit er NIE verschwindet)
+            const minX = 20;
+            const maxX = arena.clientWidth - 170;
+            const minY = 120;
+            const maxY = arena.clientHeight - 60;
 
-                    // Zufällige Koordinate, die garantiert im Sichtbereich bleibt
-                    const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
-                    const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
+            const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+            const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
-                    btn.style.left = randomX + 'px';
-                    btn.style.top = randomY + 'px';
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+            btn.style.bottom = 'auto';
+            btn.style.right = 'auto';
 
-                    // Wechselnde Texte beim Jagen
-                    if (escapes === 1) btn.innerText = "Zu langsam! 😜";
-                    if (escapes === 3) btn.innerText = "Fast gehabt 😂";
-                    if (escapes === 5) btn.innerText = "Gib auf 🏃‍♂️";
-                    if (escapes === 7) btn.innerText = "Niemals 👻";
-                }
-                </script>
-            </body>
-            </html>
-        """, height=60)
+            if (counter === 2) btn.innerText = "Zu langsam! 😜";
+            if (counter === 4) btn.innerText = "Fast gehabt 😂";
+            if (counter === 6) btn.innerText = "Gib auf 🏃‍♂️";
+        }
+        </script>
+    </body>
+    </html>
+    """, height=420)
 
 # --- SCHRITT 2: Datum & Uhrzeit ---
-elif st.session_state.step == 2:
+elif step == "2":
     st.markdown("""
         <div class="dark-card">
             <div class="main-title">Wann passt es dir?</div>
@@ -183,15 +214,19 @@ elif st.session_state.step == 2:
         st.session_state.uhrzeit = uhrzeit
         send_telegram_notification(tag, uhrzeit)
         st.session_state.step = 3
+        st.query_params["step"] = "3"
         st.rerun()
 
 # --- SCHRITT 3: Bestätigung ---
-elif st.session_state.step == 3:
+elif step == "3":
+    tag_val = st.session_state.get("tag", datetime.date.today()).strftime('%d.%m.%Y')
+    zeit_val = st.session_state.get("uhrzeit", datetime.time(20, 0)).strftime('%H:%M')
+    
     st.markdown(f"""
         <div class="dark-card">
             <div class="main-title">Abgemacht.</div>
             <div class="sub-title" style="margin-top: 15px;">
-                Ich melde mich am <b style="color:#fff;">{st.session_state.tag.strftime('%d.%m.%Y')}</b> um <b style="color:#fff;">{st.session_state.uhrzeit.strftime('%H:%M')} Uhr</b> bei dir.
+                Ich melde mich am <b style="color:#fff;">{tag_val}</b> um <b style="color:#fff;">{zeit_val} Uhr</b> bei dir.
             </div>
         </div>
     """, unsafe_allow_html=True)
